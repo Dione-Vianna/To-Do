@@ -1,0 +1,77 @@
+.task {
+  width: 980px;
+  min-height: 8vh;
+  color: var(--gray-200);
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid var(--gray-300);
+  background-color: var(--gray-500);
+  margin: 12px;
+  border-radius: 8px;
+  padding: 25px 20px 20px 20px;
+}
+
+.task-title {
+  font-size: 1.2rem;
+  margin-top: 3px;
+}
+
+.task-title {
+  width: 85%;
+}
+
+[type=checkbox]::before {
+  content: "";
+  color: transparent;
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--blue);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 100ms;
+}
+
+[type=checkbox]:hover::before {
+  background-color: #075e9422;
+  transition: 100ms;
+}
+
+
+[type=checkbox]:checked::before {
+  background-color: var(--purpler);
+  background-image: url('../../assets/Vector.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1.3rem;
+  background-position-y: 0.3rem;
+  background-position-x: 0.1rem;
+  border: 2px solid var(--purpler);
+  transition: 100ms;
+}
+
+.trash {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: none;
+  background-image: url('../../assets/Trash.svg');
+  background-color: var(--gray-500);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 2.4rem;
+}
+
+.trash:hover {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background-image: url('../../assets/TrashHover.svg');
+  background-color: var(--gray-400);
+  background-repeat: no-repeat;
+}
+
+del {
+  color: var(--gray-300);
+}
