@@ -1,44 +1,90 @@
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { NotTask } from './components/NotTask';
 import { Task } from './components/Task';
 
-import { TaskProps } from './components/types';
+import './modal.css';
+
+import { NewTaskProps, TaskProps } from './components/types';
 
 import Logo from './assets/Logo.svg';
 import Plus from './assets/Plus.svg';
 
+import api from './api';
+
 function App() {
   const [tasks, setTasks] = useState<TaskProps[]>([]);
-  const [newTask, setNewTask] = useState<TaskProps>();
+  const [newTask, setNewTask] = useState<NewTaskProps>({
+    title: '',
+    completed: false,
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const [id, setId] = useState('');
+
+  const [modalShow, setModalShow] = useState(false);
+
+  const [overlay, setOverlay] = useState(false);
+
+  useEffect(() => {
+    api.get('/').then((response) => {
+      console.log(response.data);
+      setTasks(response.data);
+    });
+  }, []);
 
   function handleCreateTask() {
     if (newTask?.title === '') return;
-    setTasks([...tasks, newTask] as TaskProps[]);
-    const task = {
-      title: '',
-      id: '',
-      checked: false,
-    };
-    setNewTask(task);
+    setLoading(true);
+
+    api
+      .post('/', newTask)
+      .then((response) => {
+        console.log(response.data);
+        setTasks([
+          ...tasks,
+          { _id: response.data.insertedId, ...newTask },
+        ] as TaskProps[]);
+        setNewTask({ title: '', completed: false });
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   function handleAddTask(event: any) {
     const task = {
       title: event.target.value,
-      id: uuidv4(),
-      date: new Date().toISOString().split('T')[0],
-      checked: false,
+      completed: false,
     };
 
     setNewTask(task);
   }
 
   function handleCheckedTask(id: string) {
+    const task = tasks.find((task) => task._id === id);
+    if (!task) return;
+
     const tasksChecked = tasks.map((task) => {
-      if (task.id === id) {
-        task.checked = !task.checked;
+      if (task._id === id) {
+        task.completed = !task.completed;
+
+        console.log(task);
+
+        api
+          .put(`/${id}`, {
+            completed: task.completed,
+          })
+          .then((response) => {
+            console.log(response.data);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+        return task;
       }
       return task;
     });
@@ -46,7 +92,73 @@ function App() {
     setTasks(tasksChecked);
   }
 
-  const tasksCompleted = tasks.filter((task) => task.checked);
+  function handleDelete() {
+    const tasksDeleted = tasks.filter((task) => task._id !== id);
+
+    api
+      .delete(`/${id}`)
+      .then((response) => {
+        console.log(response.data);
+        setTasks(tasksDeleted);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  const stopProp = (e: any) => {
+    e.stopPropagation();
+  };
+
+  const LoginOverlay = ({ removeOverlay }: any) => {
+    return (
+      <div className="overlay_background" onClick={(e) => removeOverlay()}>
+        <div className="overlay_card" onClick={(e) => stopProp(e)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              removeOverlay();
+            }}
+          >
+            <div className="modal">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h2>Excluir tarefa</h2>
+                </div>
+                <div className="modal-body">
+                  <p>Tem certeza de que deseja excluir esta tarefa?</p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn-cancel">Cancel</button>
+                  <button className="btn-delete" onClick={handleDelete}>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  function ModalDelete() {
+    return (
+      <div className="flex_column">
+        <div className={overlay ? 'overlay_shown' : 'overlay_hidden'}>
+          <LoginOverlay removeOverlay={() => setOverlay(false)} />
+        </div>
+      </div>
+    );
+  }
+
+  function handleDeleteTask(id: string) {
+    setId(id);
+    setModalShow(true);
+    setOverlay(true);
+  }
+
+  const tasksCompleted = tasks.filter((task) => task.completed);
 
   return (
     <div className="App">
@@ -64,9 +176,21 @@ function App() {
             value={newTask?.title}
             onChange={handleAddTask}
           />
-          <button className="button-add" onClick={handleCreateTask}>
-            <p>Criar {'  '}</p>
-            <img src={Plus} alt="Botão com símbolo de +" />
+          <button
+            className="button-add"
+            disabled={loading}
+            onClick={handleCreateTask}
+          >
+            {loading ? (
+              <>
+                <p>Aguarde...</p>
+              </>
+            ) : (
+              <>
+                <p>Criar {'  '}</p>
+                <img src={Plus} alt="Botão com símbolo de +" />
+              </>
+            )}
           </button>
         </div>
         <div className="content-task">
@@ -89,21 +213,20 @@ function App() {
             <NotTask />
           ) : (
             tasks.map((task) => (
-              <div key={task.id} className="tasks">
+              <div key={task._id} className="tasks">
                 <Task
-                  id={task.id}
+                  _id={task._id}
                   title={task.title}
-                  checked={task.checked}
-                  onDelete={() =>
-                    setTasks(tasks.filter((t) => t.id !== task.id))
-                  }
-                  onCheck={() => handleCheckedTask(task.id)}
+                  completed={task.completed}
+                  onDelete={() => handleDeleteTask(task._id)}
+                  onCheck={() => handleCheckedTask(task._id)}
                 />
               </div>
             ))
           )}
         </div>
       </div>
+      {modalShow && <ModalDelete />}
     </div>
   );
 }

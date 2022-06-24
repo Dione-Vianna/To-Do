@@ -1,0 +1,63 @@
+.overlay_background {
+  display: flex;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: fixed;
+  z-index: 50;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.overlay_shown {
+  opacity: 1;
+}
+
+.overlay_hidden {
+  display: none;
+  opacity: 0;
+}
+
+.overlay_card {
+  width: 380px;
+  padding: 20px;
+  height: 150px;
+  border-radius: 10px;
+  z-index: 51;
+  background-color: var(--gray-500);
+  display: flex;
+  justify-content: center;
+  color: var(--gray-200);
+
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.modal-footer button {
+  width: 80px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--gray-100);
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+  border: none;
+  margin-top: 2px;
+}
+
+.btn-cancel {
+  background-color: var(--danger);
+  color: var(--gray-300);
+  cursor: not-allowed;
+}
+
+.btn-delete {
+  background-color: var(--blue-dark);
+  color: var(--gray-100);
+}

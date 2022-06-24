@@ -4,9 +4,14 @@ import './style.css';
 export function Task(props: TaskProps) {
   return (
     <div className="task">
-      <input type="checkbox" className="check" onChange={props.onCheck} />
+      <input
+        type="checkbox"
+        className="check"
+        checked={props.completed}
+        onChange={props.onCheck}
+      />
       <div className="task-title">
-        {props.checked ? (
+        {props.completed ? (
           <del className="title">{props.title}</del>
         ) : (
           <p className="title">{props.title}</p>
