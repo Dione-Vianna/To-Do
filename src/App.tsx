@@ -6,6 +6,7 @@ import { Task } from './components/Task';
 import './modal.css';
 
 import { NewTaskProps, TaskProps } from './components/types';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import Logo from './assets/Logo.svg';
 import Plus from './assets/Plus.svg';
@@ -18,6 +19,8 @@ function App() {
     title: '',
     completed: false,
   });
+
+  // const [characters, setCharacters] = useState<TaskProps[]>(tasks);
 
   const [loading, setLoading] = useState(false);
 
@@ -109,6 +112,19 @@ function App() {
   const stopProp = (e: any) => {
     e.stopPropagation();
   };
+
+  function handleOnDragEnd(result: any) {
+    if (!result.destination) return;
+
+    console.log(tasks);
+
+    const items: any = Array.from(tasks);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setNewTask(items);
+  }
 
   const LoginOverlay = ({ removeOverlay }: any) => {
     return (
@@ -212,17 +228,54 @@ function App() {
           {tasks.length === 0 ? (
             <NotTask />
           ) : (
-            tasks.map((task) => (
-              <div key={task._id} className="tasks">
-                <Task
-                  _id={task._id}
-                  title={task.title}
-                  completed={task.completed}
-                  onDelete={() => handleDeleteTask(task._id)}
-                  onCheck={() => handleCheckedTask(task._id)}
-                />
-              </div>
-            ))
+            // tasks.map((task) => (
+            //   <div key={task._id} className="tasks">
+            //     <Task
+            //       _id={task._id}
+            //       title={task.title}
+            //       completed={task.completed}
+            //       onDelete={() => handleDeleteTask(task._id)}
+            //       onCheck={() => handleCheckedTask(task._id)}
+            //     />
+            //   </div>
+            // ))
+
+            <DragDropContext onDragEnd={handleOnDragEnd}>
+              <Droppable droppableId="tasks">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                    {tasks.map((task, index) => {
+                      return (
+                        <Draggable
+                          key={task._id}
+                          draggableId={task._id}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              <div className="tasks">
+                                <Task
+                                  _id={task._id}
+                                  title={task.title}
+                                  completed={task.completed}
+                                  onDelete={() => handleDeleteTask(task._id)}
+                                  onCheck={() => handleCheckedTask(task._id)}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           )}
         </div>
       </div>
